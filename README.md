@@ -1,2 +1,12 @@
-# FinalProject-NoahT-DejaR
-CardinalFinder is an application that will help BSU students form study groups with people in similar classes.
+# CardinalFinder
+
+Authors:
+
+Noah Tutt
+
+Deja Randolph
+
+
+This project is to help BSU students find study partners with people in the same classses as them. Not everyone is comfortable enough to speak up in class, so this application is to help students who have that problem.
+
+Will be updated soon!
