@@ -11,6 +11,6 @@ This project is to help BSU students find study partners with people in the same
 
 How to run CardinalFinder
 
-  Open gradle sidebar
-  Locate the application folder
-  Double click "Run"
+  - Open gradle sidebar
+  - Locate the application folder
+  - Double click "Run"
