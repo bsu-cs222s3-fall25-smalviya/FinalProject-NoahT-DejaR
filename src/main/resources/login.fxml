@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="bsu.edu.cs.LoginController"
+      spacing="10" alignment="CENTER" style="-fx-background-color: #f8f9fa;" prefWidth="300" prefHeight="250">
+    <Label text="Cardinal Finder" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+    <TextField fx:id="usernameField" promptText="Username"/>
+    <PasswordField fx:id="passwordField" promptText="Password"/>
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Login" onAction="#onLogin"/>
+        <Button text="Sign Up" onAction="#onSignUp"/>
+    </HBox>
+</VBox>
