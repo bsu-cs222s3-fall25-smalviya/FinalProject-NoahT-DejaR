@@ -38,18 +38,18 @@ public class GUI {
             String pass = passwordField.getText().trim();
 
             if (user.isEmpty() || pass.isEmpty()) {
-                messageLabel.setText("Please type both username and password.");
+                messageLabel.setText("Please fill in both fields.");
                 return;
             }
 
             if (users.containsKey(user)) {
                 if (users.get(user).equals(pass)) {
-                    messageLabel.setText("Welcome back, " + user + "! :)");
+                    messageLabel.setText("Welcome back, " + user + "!");
                 } else {
                     messageLabel.setText("Incorrect password.");
                 }
             } else {
-                messageLabel.setText("User not found! Please sign up first.");
+                messageLabel.setText("User not found. Please sign up first.");
             }
         });
 
@@ -58,15 +58,15 @@ public class GUI {
             String pass = passwordField.getText().trim();
 
             if (user.isEmpty() || pass.isEmpty()) {
-                messageLabel.setText("Please type both username and password.");
+                messageLabel.setText("Please fill in both fields.");
                 return;
             }
 
             if (users.containsKey(user)) {
-                messageLabel.setText("That username already exists. Sorry :(");
+                messageLabel.setText("That username already exists.");
             } else {
                 users.put(user, pass);
-                messageLabel.setText("Account created for " + user + " :)");
+                messageLabel.setText("Account created for " + user + "!");
                 System.out.println("Registered users: " + users.keySet());
             }
         });

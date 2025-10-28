@@ -10,6 +10,9 @@ repositories {
 dependencies {
     implementation("org.openjfx:javafx-controls:21.0.1")
     implementation("org.openjfx:javafx-fxml:21.0.1")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0") // ADD THIS
 }
 
 javafx {
@@ -18,6 +21,9 @@ javafx {
 }
 
 application {
-
     mainClass.set("bsu.edu.cs.Main")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
