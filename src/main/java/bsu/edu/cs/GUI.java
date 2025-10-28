@@ -66,7 +66,7 @@ public class GUI {
                 messageLabel.setText("That username already exists. Sorry :(");
             } else {
                 users.put(user, pass);
-                messageLabel.setText("Account created for " + user + ":)");
+                messageLabel.setText("Account created for " + user + " :)");
                 System.out.println("Registered users: " + users.keySet());
             }
         });
