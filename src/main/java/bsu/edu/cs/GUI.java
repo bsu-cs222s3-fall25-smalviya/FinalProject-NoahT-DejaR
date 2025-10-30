@@ -8,12 +8,42 @@ import javafx.stage.Stage;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class GUI {
 
-    private Map<String, String> users = new HashMap<>();
+    private Map<String, User> users = new HashMap<>();
+    private final File userFile = new File("src/main/resources/users.txt");
+
+    public GUI() {
+        loadUsers();
+    }
+
+    private void loadUsers() {
+        if (!userFile.exists()) return;
+        try (BufferedReader reader = new BufferedReader(new FileReader(userFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                User u = User.fromString(line);
+                users.put(u.getUsername(), u);
+            }
+        } catch (IOException e) {
+            System.out.println("Error loading users: " + e.getMessage());
+        }
+    }
+
+    private void saveUsers() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(userFile))) {
+            for (User u : users.values()) {
+                writer.write(u.toString());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving users: " + e.getMessage());
+        }
+    }
 
     public void start(Stage stage) {
         stage.setTitle("Cardinal Finder");
@@ -31,53 +61,51 @@ public class GUI {
         Button signupButton = new Button("Sign Up");
 
         Label messageLabel = new Label();
-        messageLabel.setStyle("-fx-text-fill: #444;");
 
+        // Login button logic
         loginButton.setOnAction(e -> {
             String user = usernameField.getText().trim();
             String pass = passwordField.getText().trim();
 
             if (user.isEmpty() || pass.isEmpty()) {
-                messageLabel.setText("Please fill in both fields.");
+                messageLabel.setText("Please type both username and password.");
                 return;
             }
 
-            if (users.containsKey(user)) {
-                if (users.get(user).equals(pass)) {
-                    messageLabel.setText("Welcome back, " + user + "!");
-                } else {
-                    messageLabel.setText("Incorrect password.");
-                }
+            if (users.containsKey(user) && users.get(user).getPassword().equals(pass)) {
+                // Swap scene instead of opening a new window
+                stage.setScene(SceneManager.createMainScene(users.get(user).getUsername(), stage));
             } else {
-                messageLabel.setText("User not found. Please sign up first.");
+                messageLabel.setText("Incorrect username or password.");
             }
         });
 
+        // Sign-up button logic
         signupButton.setOnAction(e -> {
             String user = usernameField.getText().trim();
             String pass = passwordField.getText().trim();
 
             if (user.isEmpty() || pass.isEmpty()) {
-                messageLabel.setText("Please fill in both fields.");
+                messageLabel.setText("Please type both username and password.");
                 return;
             }
 
             if (users.containsKey(user)) {
                 messageLabel.setText("That username already exists.");
             } else {
-                users.put(user, pass);
+                User newUser = new User(user, pass);
+                users.put(user, newUser);
+                saveUsers();
                 messageLabel.setText("Account created for " + user + "!");
-                System.out.println("Registered users: " + users.keySet());
             }
         });
 
         HBox buttonBox = new HBox(10, loginButton, signupButton);
         buttonBox.setAlignment(Pos.CENTER);
 
-        VBox layout = new VBox(12);
+        VBox layout = new VBox(12, titleLabel, usernameField, passwordField, buttonBox, messageLabel);
         layout.setPadding(new Insets(25));
         layout.setAlignment(Pos.CENTER);
-        layout.getChildren().addAll(titleLabel, usernameField, passwordField, buttonBox, messageLabel);
 
         Scene scene = new Scene(layout, 350, 260);
         stage.setScene(scene);
