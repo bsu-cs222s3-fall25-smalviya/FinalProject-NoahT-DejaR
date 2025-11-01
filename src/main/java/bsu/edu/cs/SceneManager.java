@@ -9,7 +9,6 @@ import javafx.geometry.Insets;
 
 public class SceneManager {
 
-    // Creates the main scene after login
     public static Scene createMainScene(String username, Stage stage) {
         Label welcomeLabel = new Label("Welcome, " + username + "!");
         welcomeLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
@@ -19,7 +18,6 @@ public class SceneManager {
 
         Button logoutButton = new Button("Logout");
         logoutButton.setOnAction(e -> {
-            // Go back to login scene
             GUI gui = new GUI();
             gui.start(stage);
         });
