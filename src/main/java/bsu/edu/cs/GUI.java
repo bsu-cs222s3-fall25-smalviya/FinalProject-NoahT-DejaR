@@ -62,7 +62,6 @@ public class GUI {
 
         Label messageLabel = new Label();
 
-        // Login button logic
         loginButton.setOnAction(e -> {
             String user = usernameField.getText().trim();
             String pass = passwordField.getText().trim();
@@ -73,7 +72,6 @@ public class GUI {
             }
 
             if (users.containsKey(user) && users.get(user).getPassword().equals(pass)) {
-                // Swap scene instead of opening a new window
                 stage.setScene(SceneManager.createMainScene(users.get(user).getUsername(), stage));
             } else {
                 messageLabel.setText("Incorrect username or password.");
