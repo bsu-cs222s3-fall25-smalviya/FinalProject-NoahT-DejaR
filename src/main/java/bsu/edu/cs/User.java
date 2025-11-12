@@ -5,24 +5,31 @@ import java.util.Arrays;
 import java.util.List;
 
 public class User {
-    private String username;
+    private String firstName;
+    private String email;
     private String password;
     private List<String> courses;
 
-    public User(String username, String password) {
-        this.username = username;
+    public User(String firstName, String email, String password) {
+        this.firstName = firstName;
+        this.email = email.toLowerCase();
         this.password = password;
         this.courses = new ArrayList<>();
     }
 
-    public User(String username, String password, List<String> courses) {
-        this.username = username;
+    public User(String firstName, String email, String password, List<String> courses) {
+        this.firstName = firstName;
+        this.email = email.toLowerCase();
         this.password = password;
         this.courses = new ArrayList<>(courses);
     }
 
-    public String getUsername() {
-        return username;
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public String getPassword() {
@@ -41,14 +48,15 @@ public class User {
 
     public static User fromString(String line) {
         String[] parts = line.split(";");
-        String username = parts[0];
-        String password = parts[1];
-        List<String> courses = parts.length > 2 ? Arrays.asList(parts[2].split(",")) : new ArrayList<>();
-        return new User(username, password, courses);
+        String firstName = parts[0];
+        String email = parts[1].toLowerCase();
+        String password = parts[2];
+        List<String> courses = parts.length > 3 ? Arrays.asList(parts[3].split(",")) : new ArrayList<>();
+        return new User(firstName, email, password, courses);
     }
 
     @Override
     public String toString() {
-        return username + ";" + password + ";" + String.join(",", courses);
+        return firstName + ";" + email + ";" + password + ";" + String.join(",", courses);
     }
 }
