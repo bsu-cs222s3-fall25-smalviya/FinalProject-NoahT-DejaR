@@ -31,7 +31,7 @@ public class MockStudentDatabase {
     }
 
     public static void generateMockDatabase(int numberOfStudents) {
-        File file = new File("src/main/resources/mock_students.txt");
+        File file = new File("src/main/resources/users.txt");
         Random random = new Random();
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
