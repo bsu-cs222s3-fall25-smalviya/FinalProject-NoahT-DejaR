@@ -43,14 +43,7 @@ public class User {
     public static User fromString(String data) {
         String[] parts = data.split(";");
         if (parts.length < 4) return null;
-
-        List<String> userCourses;
-        if (parts[3].isEmpty()) {
-            userCourses = new ArrayList<>();
-        } else {
-            userCourses = List.of(parts[3].split(","));
-        }
-
-        return new User(parts[0], parts[1], parts[2], new ArrayList<>(userCourses));
+        List<String> userCourses = List.of(parts[3].split(","));
+        return new User(parts[0], parts[1], parts[2], userCourses);
     }
 }
