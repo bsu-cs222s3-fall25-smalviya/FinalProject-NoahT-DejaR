@@ -143,6 +143,7 @@ Marcellus;Reyes;marcellus.reyes@bsu.edu;ECON201,CS446,CS121
 Raymundo;Hayes;raymundo.hayes@bsu.edu;PHYS215,MATH125,CHEM101
 Adolf;Gonzales;adolf.gonzales@bsu.edu;CHEM101,ENG104,HIST150
 Zane;Johnston;zane.johnston@bsu.edu;CS222,CS120,HIST150
+Jimmy;jimmy.fallon@bsu.edu;1234;CS222,CS345,MATH125,ENG104,HIST150
 Cruz;Pierce;cruz.pierce@bsu.edu;CHEM101,HIST150,CS446
 Leigh;Howard;leigh.howard@bsu.edu;CS121,CS120,CS333
 Adam;Kelley;adam.kelley@bsu.edu;CS120,ENG104,CS446
