@@ -7,6 +7,7 @@ import javafx.stage.Stage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class SignupScene {
@@ -55,7 +56,9 @@ public class SignupScene {
                 return;
             }
 
-            User newUser = new User(firstName, email, password);
+            User newUser = new User(firstName, email, password, new ArrayList<>());
+
+
             users.put(email, newUser);
 
             stage.setScene(CourseSelectionScene.create(newUser, users, stage));

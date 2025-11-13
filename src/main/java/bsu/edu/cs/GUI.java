@@ -22,7 +22,7 @@ public class GUI {
             String line;
             while ((line = reader.readLine()) != null) {
                 User u = User.fromString(line);
-                users.put(u.getEmail(), u);
+                if (u != null) users.put(u.getEmail(), u);
             }
         } catch (Exception e) {
             System.out.println("Error loading users: " + e.getMessage());

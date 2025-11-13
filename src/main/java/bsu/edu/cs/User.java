@@ -1,7 +1,6 @@
 package bsu.edu.cs;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class User {
@@ -11,52 +10,47 @@ public class User {
     private List<String> courses;
 
     public User(String firstName, String email, String password) {
-        this.firstName = firstName;
-        this.email = email.toLowerCase();
-        this.password = password;
-        this.courses = new ArrayList<>();
+        this(firstName, email, password, new ArrayList<>());
     }
 
     public User(String firstName, String email, String password, List<String> courses) {
         this.firstName = firstName;
-        this.email = email.toLowerCase();
+        this.email = email;
         this.password = password;
-        this.courses = new ArrayList<>(courses);
+        this.courses = courses;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public List<String> getCourses() {
-        return courses;
-    }
+    public String getFirstName() { return firstName; }
+    public String getEmail() { return email; }
+    public String getPassword() { return password; }
+    public List<String> getCourses() { return courses; }
+    public void setCourses(List<String> courses) { this.courses = courses; }
 
     public void addCourse(String course) {
+        if (courses == null) {
+            courses = new ArrayList<>();
+        }
         if (!courses.contains(course)) {
             courses.add(course);
         }
     }
 
-    public static User fromString(String line) {
-        String[] parts = line.split(";");
-        String firstName = parts[0];
-        String email = parts[1].toLowerCase();
-        String password = parts[2];
-        List<String> courses = parts.length > 3 ? Arrays.asList(parts[3].split(",")) : new ArrayList<>();
-        return new User(firstName, email, password, courses);
-    }
-
     @Override
     public String toString() {
         return firstName + ";" + email + ";" + password + ";" + String.join(",", courses);
+    }
+
+    public static User fromString(String data) {
+        String[] parts = data.split(";");
+        if (parts.length < 4) return null;
+
+        List<String> userCourses;
+        if (parts[3].isEmpty()) {
+            userCourses = new ArrayList<>();
+        } else {
+            userCourses = List.of(parts[3].split(","));
+        }
+
+        return new User(parts[0], parts[1], parts[2], new ArrayList<>(userCourses));
     }
 }
