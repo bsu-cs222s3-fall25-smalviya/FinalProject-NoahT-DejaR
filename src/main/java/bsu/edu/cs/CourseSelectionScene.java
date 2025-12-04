@@ -51,7 +51,6 @@ public class CourseSelectionScene {
 
             Label courseLabel = new Label(selected);
             selectedCoursesBox.getChildren().add(courseLabel);
-
         });
 
         Button nextButton = new Button("Next");
@@ -60,13 +59,19 @@ public class CourseSelectionScene {
                 messageLabel.setText("Please add at least one course.");
                 return;
             }
+
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Confirm Courses");
             alert.setHeaderText("Are you sure these are your courses?");
             alert.setContentText("You can edit them later if needed.");
+
             alert.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
-                    stage.setScene(MatchingScene.create(currentUser, users, stage));
+
+                    currentUser.setCourses(selectedCourses);
+
+                    // NEW — Route to TimeAvailabilityScene
+                    stage.setScene(TimeAvailabilityScene.create(currentUser, users, stage));
                 }
             });
         });
