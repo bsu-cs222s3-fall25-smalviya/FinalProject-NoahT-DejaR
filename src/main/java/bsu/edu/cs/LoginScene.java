@@ -34,17 +34,25 @@ public class LoginScene {
         layout.setAlignment(Pos.CENTER);
 
         loginButton.setOnAction(e -> {
-            String email = emailField.getText().trim();
+            String email = emailField.getText().trim().toLowerCase();
             String pass = passwordField.getText().trim();
 
-            User user = users.get(email.toLowerCase());
+            User user = users.get(email);
+
             if (user != null && user.getPassword().equals(pass)) {
-                messageLabel.setText("Welcome, " + user.getFirstName() + "!");
-                stage.setScene(CourseSelectionScene.create(user, users, stage));
+
+                // User exists, check if they have availability
+                if (user.getAvailability() != null && !user.getAvailability().isEmpty()) {
+                    stage.setScene(MatchingScene.create(user, users, stage));
+                } else {
+                    stage.setScene(TimeAvailabilityScene.create(user, users, stage));
+                }
+
             } else {
                 messageLabel.setText("Invalid email or password.");
             }
         });
+
 
         signupButton.setOnAction(e -> stage.setScene(SignupScene.create(users, stage)));
 
