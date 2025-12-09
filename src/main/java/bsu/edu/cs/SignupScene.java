@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class SignupScene {
@@ -56,7 +57,8 @@ public class SignupScene {
                 return;
             }
 
-            User newUser = new User(firstName, email, password, new ArrayList<>());
+            User newUser = new User(firstName, email, password, new ArrayList<String>(), new HashMap<String, Boolean>());
+
 
 
             users.put(email, newUser);

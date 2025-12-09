@@ -50,7 +50,7 @@ public class GUI {
     }
 
     public void start(Stage stage) {
-        Scene loginScene = LoginScene.create(users, stage, this);
+        Scene loginScene = LoginScene.create(users, stage);
         stage.setScene(loginScene);
         stage.setTitle("Cardinal Finder");
         stage.show();
