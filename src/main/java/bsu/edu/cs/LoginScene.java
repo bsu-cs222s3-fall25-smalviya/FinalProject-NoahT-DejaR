@@ -41,11 +41,10 @@ public class LoginScene {
 
             if (user != null && user.getPassword().equals(pass)) {
 
-                // User exists, check if they have availability
                 if (user.getAvailability() != null && !user.getAvailability().isEmpty()) {
                     stage.setScene(MatchingScene.create(user, users, stage));
                 } else {
-                    stage.setScene(TimeAvailabilityScene.create(user, users, stage));
+                    stage.setScene(TimeAvailabilityScene.create(user, users, stage, false));
                 }
 
             } else {

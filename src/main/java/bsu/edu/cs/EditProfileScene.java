@@ -25,17 +25,14 @@ public class EditProfileScene {
         editTimesBtn.setMinWidth(200);
         backBtn.setMinWidth(200);
 
-        // Go to CourseSelectionScene in editing mode
         editCoursesBtn.setOnAction(e -> {
             stage.setScene(CourseSelectionScene.create(currentUser, users, stage, true));
         });
 
-        // Go to TimeAvailabilityScene in editing mode
         editTimesBtn.setOnAction(e -> {
             stage.setScene(TimeAvailabilityScene.create(currentUser, users, stage, true));
         });
 
-        // Go back to MatchingScene
         backBtn.setOnAction(e -> {
             stage.setScene(MatchingScene.create(currentUser, users, stage));
         });

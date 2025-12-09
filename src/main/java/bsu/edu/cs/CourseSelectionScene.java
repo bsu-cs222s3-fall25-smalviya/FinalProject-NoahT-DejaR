@@ -19,7 +19,6 @@ public class CourseSelectionScene {
             "CHEM101", "PHYS215", "ECON201", "PSYCH100"
     };
 
-    // New: editingMode determines whether to return to edit scene or next scene
     public static Scene create(User currentUser, Map<String, User> users, Stage stage, boolean editingMode) {
         Label titleLabel = new Label("Select Your Courses");
         titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #990000;");
@@ -36,7 +35,6 @@ public class CourseSelectionScene {
 
         Label messageLabel = new Label();
 
-        // Add course button
         Button addCourseButton = new Button("Add Course");
         addCourseButton.setOnAction(e -> {
             String selected = courseDropdown.getValue();
@@ -53,7 +51,6 @@ public class CourseSelectionScene {
             selectedCoursesView.getItems().add(selected);
         });
 
-        // Remove course button
         Button removeCourseButton = new Button("Remove Course");
         removeCourseButton.setOnAction(e -> {
             String selected = selectedCoursesView.getSelectionModel().getSelectedItem();
@@ -77,10 +74,9 @@ public class CourseSelectionScene {
             }
 
             if (editingMode) {
-                // Return to EditProfileScene
                 stage.setScene(EditProfileScene.create(currentUser, users, stage));
             } else {
-                stage.setScene(TimeAvailabilityScene.create(currentUser, users, stage));
+                stage.setScene(TimeAvailabilityScene.create(currentUser, users, stage, false));
             }
         });
 

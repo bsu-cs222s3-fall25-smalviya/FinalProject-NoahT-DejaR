@@ -15,7 +15,7 @@ public class MatchingScene {
 
     public static Scene create(User currentUser, Map<String, User> users, Stage stage) {
 
-        Label titleLabel = new Label("Welcome, " + currentUser.getFirstName() + "! Let's find you a study buddy!");
+        Label titleLabel = new Label("Welcome to CardinalFinder, " + currentUser.getFirstName() + "!");
         titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #990000;");
         titleLabel.setWrapText(true);
 
@@ -32,7 +32,6 @@ public class MatchingScene {
                     .filter(u -> !u.getEmail().equals(currentUser.getEmail()))
                     .filter(u -> u.getCourses().contains(course))
                     .filter(u -> {
-                        // Check if at least one shared availability
                         return u.getAvailability().keySet().stream()
                                 .anyMatch(slot -> currentUser.getAvailability().getOrDefault(slot, false)
                                         && u.getAvailability().getOrDefault(slot, false));
@@ -58,17 +57,20 @@ public class MatchingScene {
                         .orElse(null);
 
                 if (selectedUser != null) {
-                    // Show shared availability along with email
+
                     List<String> sharedSlots = selectedUser.getAvailability().keySet().stream()
                             .filter(slot -> currentUser.getAvailability().getOrDefault(slot, false)
                                     && selectedUser.getAvailability().getOrDefault(slot, false))
+                            .map(MatchingScene::formatSlotRange)  // <-- ONLY CHANGE
                             .collect(Collectors.toList());
 
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Student Contact Info");
                     alert.setHeaderText(selectedUser.getFirstName());
-                    alert.setContentText("Email: " + selectedUser.getEmail()
-                            + "\nShared Availability: " + String.join(", ", sharedSlots));
+                    alert.setContentText(
+                            "Email: " + selectedUser.getEmail()
+                                    + "\nShared Availability: " + String.join(", ", sharedSlots)
+                    );
                     alert.showAndWait();
                 }
             });
@@ -84,7 +86,6 @@ public class MatchingScene {
         ScrollPane scrollPane = new ScrollPane(mainBox);
         scrollPane.setFitToWidth(true);
 
-        // Buttons
         Button editProfileButton = new Button("Edit Profile");
         editProfileButton.setMinWidth(150);
         editProfileButton.setOnAction(e -> stage.setScene(EditProfileScene.create(currentUser, users, stage)));
@@ -101,5 +102,24 @@ public class MatchingScene {
         wrapper.setAlignment(Pos.TOP_CENTER);
 
         return new Scene(wrapper, 450, 500);
+    }
+
+    private static String formatSlotRange(String slot) {
+        String[] parts = slot.split("-");
+        String day = parts[0];
+        int hour = Integer.parseInt(parts[1].replace(":00", ""));
+
+        String start = convertTo12Hour(hour);
+        String end = convertTo12Hour(hour + 1);
+
+        return day + " " + start + " - " + end;
+    }
+
+    private static String convertTo12Hour(int hour) {
+        int h = hour % 12;
+        if (h == 0) h = 12;
+
+        String suffix = (hour < 12 || hour == 24) ? " AM" : " PM";
+        return h + suffix;
     }
 }

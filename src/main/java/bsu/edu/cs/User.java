@@ -41,7 +41,6 @@ public class User {
         this.availability = availability;
     }
 
-    // Load from CSV
     public static User fromString(String line) {
         String[] parts = line.split(";");
         String firstName = parts[0];

@@ -22,22 +22,19 @@ public class TimeAvailabilityScene {
         grid.setHgap(5);
         grid.setVgap(5);
 
-        // Day labels
         for (int d = 0; d < DAYS.length; d++) {
             Label dayLabel = new Label(DAYS[d]);
             dayLabel.setStyle("-fx-font-weight: bold;");
             grid.add(dayLabel, 0, d + 1);
         }
 
-        // Hour labels with time ranges
         for (int h = START_HOUR; h <= END_HOUR; h++) {
-            String timeLabel = String.format("%02d:00-%02d:00", h, h+1);
-            Label hourLabel = new Label(timeLabel);
+            String rangeLabel = formatRange(h);
+            Label hourLabel = new Label(rangeLabel);
             hourLabel.setStyle("-fx-font-weight: bold;");
             grid.add(hourLabel, h - START_HOUR + 1, 0);
         }
 
-        // Availability buttons
         for (int d = 0; d < DAYS.length; d++) {
             for (int h = START_HOUR; h <= END_HOUR; h++) {
                 String key = DAYS[d] + "-" + String.format("%02d:00", h);
@@ -60,7 +57,6 @@ public class TimeAvailabilityScene {
         Button nextButton = new Button(editing ? "Save and Return" : "Next");
         nextButton.setOnAction(e -> {
             if (editing) {
-                // Return to EditProfileScene
                 stage.setScene(EditProfileScene.create(currentUser, users, stage));
             } else {
                 stage.setScene(MatchingScene.create(currentUser, users, stage));
@@ -76,5 +72,17 @@ public class TimeAvailabilityScene {
 
     public static Scene create(User currentUser, Map<String, User> users, Stage stage) {
         return create(currentUser, users, stage, false);
+    }
+
+    private static String formatRange(int hour) {
+        return convert(hour) + " - " + convert(hour + 1);
+    }
+
+    private static String convert(int hour) {
+        int h = hour % 12;
+        if (h == 0) h = 12;
+
+        String suffix = (hour < 12 || hour == 24) ? " AM" : " PM";
+        return h + suffix;
     }
 }
