@@ -19,7 +19,7 @@ public class CourseSelectionScene {
             "CHEM101", "PHYS215", "ECON201", "PSYCH100"
     };
 
-    public static Scene create(User currentUser, Map<String, User> users, Stage stage) {
+    public static Scene create(User currentUser, Map<String, User> users, Stage stage, boolean editingMode) {
         Label titleLabel = new Label("Select Your Courses");
         titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #990000;");
 
@@ -27,15 +27,15 @@ public class CourseSelectionScene {
         courseDropdown.getItems().addAll(COURSE_LIST);
         courseDropdown.setPromptText("Select a course");
 
-        VBox selectedCoursesBox = new VBox(5);
-        selectedCoursesBox.setPadding(new Insets(10));
-        selectedCoursesBox.setStyle("-fx-border-color: gray; -fx-border-width: 1px;");
+        ListView<String> selectedCoursesView = new ListView<>();
+        selectedCoursesView.getItems().addAll(currentUser.getCourses());
+        selectedCoursesView.setMaxHeight(150);
 
-        List<String> selectedCourses = new ArrayList<>();
+        List<String> selectedCourses = new ArrayList<>(currentUser.getCourses());
 
-        Button addCourseButton = new Button("Add Course");
         Label messageLabel = new Label();
 
+        Button addCourseButton = new Button("Add Course");
         addCourseButton.setOnAction(e -> {
             String selected = courseDropdown.getValue();
             if (selected == null || selected.isEmpty()) {
@@ -48,10 +48,23 @@ public class CourseSelectionScene {
             }
             selectedCourses.add(selected);
             currentUser.addCourse(selected);
-
-            Label courseLabel = new Label(selected);
-            selectedCoursesBox.getChildren().add(courseLabel);
+            selectedCoursesView.getItems().add(selected);
         });
+
+        Button removeCourseButton = new Button("Remove Course");
+        removeCourseButton.setOnAction(e -> {
+            String selected = selectedCoursesView.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                messageLabel.setText("Please select a course to remove.");
+                return;
+            }
+            selectedCourses.remove(selected);
+            currentUser.getCourses().remove(selected);
+            selectedCoursesView.getItems().remove(selected);
+        });
+
+        HBox selectionButtons = new HBox(10, courseDropdown, addCourseButton, removeCourseButton);
+        selectionButtons.setAlignment(Pos.CENTER);
 
         Button nextButton = new Button("Next");
         nextButton.setOnAction(e -> {
@@ -60,29 +73,17 @@ public class CourseSelectionScene {
                 return;
             }
 
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Courses");
-            alert.setHeaderText("Are you sure these are your courses?");
-            alert.setContentText("You can edit them later if needed.");
-
-            alert.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-
-                    currentUser.setCourses(selectedCourses);
-
-                    // NEW — Route to TimeAvailabilityScene
-                    stage.setScene(TimeAvailabilityScene.create(currentUser, users, stage));
-                }
-            });
+            if (editingMode) {
+                stage.setScene(EditProfileScene.create(currentUser, users, stage));
+            } else {
+                stage.setScene(TimeAvailabilityScene.create(currentUser, users, stage, false));
+            }
         });
 
-        HBox selectionBox = new HBox(10, courseDropdown, addCourseButton);
-        selectionBox.setAlignment(Pos.CENTER);
-
-        VBox layout = new VBox(15, titleLabel, selectionBox, selectedCoursesBox, messageLabel, nextButton);
+        VBox layout = new VBox(15, titleLabel, selectionButtons, selectedCoursesView, messageLabel, nextButton);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
 
-        return new Scene(layout, 400, 450);
+        return new Scene(layout, 450, 450);
     }
 }

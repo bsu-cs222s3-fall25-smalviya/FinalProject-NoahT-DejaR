@@ -61,7 +61,8 @@ public class SignupScene {
 
             users.put(email, newUser);
 
-            stage.setScene(CourseSelectionScene.create(newUser, users, stage));
+            stage.setScene(CourseSelectionScene.create(newUser, users, stage, false));
+
         });
 
         return new Scene(layout, 400, 350);

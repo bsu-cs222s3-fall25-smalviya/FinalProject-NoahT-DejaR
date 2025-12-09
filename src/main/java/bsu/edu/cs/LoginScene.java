@@ -38,19 +38,20 @@ public class LoginScene {
             String pass = passwordField.getText().trim();
 
             User user = users.get(email);
-            if (user != null && user.getPassword().equals(pass)) {
-                messageLabel.setText("Welcome, " + user.getFirstName() + "!");
 
-                if (user.getCourses() != null && !user.getCourses().isEmpty()) {
+            if (user != null && user.getPassword().equals(pass)) {
+
+                if (user.getAvailability() != null && !user.getAvailability().isEmpty()) {
                     stage.setScene(MatchingScene.create(user, users, stage));
                 } else {
-                    stage.setScene(CourseSelectionScene.create(user, users, stage));
+                    stage.setScene(TimeAvailabilityScene.create(user, users, stage, false));
                 }
 
             } else {
                 messageLabel.setText("Invalid email or password.");
             }
         });
+
 
         signupButton.setOnAction(e -> stage.setScene(SignupScene.create(users, stage)));
 

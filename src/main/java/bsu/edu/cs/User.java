@@ -7,107 +7,78 @@ public class User {
     private String email;
     private String password;
     private List<String> courses;
-    private Map<String, List<String>> studySchedule; // day → list of times
+    private Map<String, Boolean> availability;
 
     public User(String firstName, String email, String password) {
-        this(firstName, email, password, new ArrayList<>(), new HashMap<>());
-    }
-
-    public User(String firstName, String email, String password, List<String> courses) {
-        this(firstName, email, password, courses, new HashMap<>());
-    }
-
-    public User(String firstName, String email, String password, List<String> courses,
-                Map<String, List<String>> studySchedule) {
         this.firstName = firstName;
-        this.email = email;
+        this.email = email.toLowerCase();
         this.password = password;
-        this.courses = courses;
-        this.studySchedule = studySchedule;
+        this.courses = new ArrayList<>();
+        this.availability = new HashMap<>();
+    }
+
+    public User(String firstName, String email, String password, List<String> courses, Map<String, Boolean> availability) {
+        this.firstName = firstName;
+        this.email = email.toLowerCase();
+        this.password = password;
+        this.courses = new ArrayList<>(courses);
+        this.availability = availability == null ? new HashMap<>() : new HashMap<>(availability);
     }
 
     public String getFirstName() { return firstName; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }
     public List<String> getCourses() { return courses; }
-    public Map<String, List<String>> getStudySchedule() { return studySchedule; }
-
-    public void setCourses(List<String> courses) {
-        this.courses = courses;
-    }
+    public Map<String, Boolean> getAvailability() { return availability; }
 
     public void addCourse(String course) {
-        if (courses == null) courses = new ArrayList<>();
-        if (!courses.contains(course)) courses.add(course);
+        if (!courses.contains(course)) {
+            courses.add(course);
+        }
     }
 
-    public void setStudySchedule(Map<String, List<String>> schedule) {
-        this.studySchedule = schedule;
+    public void setAvailability(Map<String, Boolean> availability) {
+        this.availability = availability;
+    }
+
+    public static User fromString(String line) {
+        String[] parts = line.split(";");
+        String firstName = parts[0];
+        String email = parts[1].toLowerCase();
+        String password = parts[2];
+
+        List<String> courses = new ArrayList<>();
+        if (parts.length > 3 && !parts[3].isEmpty()) {
+            courses = Arrays.asList(parts[3].split(","));
+        }
+
+        Map<String, Boolean> availability = new HashMap<>();
+        if (parts.length > 4 && !parts[4].isEmpty()) {
+            String[] entries = parts[4].split(",");
+            for (String entry : entries) {
+                String[] keyVal = entry.split("=");
+                if (keyVal.length == 2) {
+                    availability.put(keyVal[0], Boolean.parseBoolean(keyVal[1]));
+                }
+            }
+        }
+
+        return new User(firstName, email, password, courses, availability);
     }
 
     @Override
     public String toString() {
-        String courseStr = String.join(",", courses);
+        String coursesStr = String.join(",", courses);
 
-        // serialize schedule: day:time1,time2|day:time3,time4
-        List<String> chunks = new ArrayList<>();
-        for (var entry : studySchedule.entrySet()) {
-            String day = normalizeDay(entry.getKey()); // ensures 3-letter abbreviation
-            chunks.add(day + ":" + String.join(",", entry.getValue()));
-        }
-        String scheduleStr = String.join("|", chunks);
-
-        return firstName + ";" + email + ";" + password + ";" + courseStr + ";" + scheduleStr;
-    }
-
-    public static User fromString(String data) {
-        String[] parts = data.split(";");
-        if (parts.length < 4) return null;
-
-        List<String> userCourses =
-                parts[3].isEmpty() ? new ArrayList<>() : Arrays.asList(parts[3].split(","));
-
-        Map<String, List<String>> schedule = new LinkedHashMap<>();
-        if (parts.length >= 5) {
-            for (int i = 4; i < parts.length; i++) {
-                String part = parts[i].trim();
-                if (part.isEmpty()) continue;
-
-                String[] daySplit = part.split(":");
-                if (daySplit.length != 2) continue;
-
-                String dayRaw = daySplit[0].trim();
-                String day = normalizeDay(dayRaw);  // Convert "Monday" → "Mon", etc.
-                String timesRaw = daySplit[1];
-
-                List<String> times = new ArrayList<>();
-                if (!timesRaw.equalsIgnoreCase("NONE")) {
-                    String[] timeParts = timesRaw.split(",");
-                    for (String t : timeParts) {
-                        t = t.trim();
-                        if (!t.isEmpty()) {
-                            times.add(t);
-                        }
-                    }
-                }
-                schedule.put(day, times);
-            }
+        String availabilityStr = "";
+        if (availability != null && !availability.isEmpty()) {
+            availabilityStr = String.join(",",
+                    availability.entrySet().stream()
+                            .map(e -> e.getKey() + "=" + e.getValue())
+                            .toList()
+            );
         }
 
-        return new User(parts[0], parts[1], parts[2], userCourses, schedule);
-    }
-
-    /** Converts full day names to 3-letter abbreviations, leaves abbreviations as-is */
-    private static String normalizeDay(String day) {
-        switch (day.toLowerCase()) {
-            case "monday": return "Mon";
-            case "tuesday": return "Tue";
-            case "wednesday": return "Wed";
-            case "thursday": return "Thu";
-            case "friday": return "Fri";
-            case "saturday": return "Sat";
-            case "sunday": return "Sun";
-            default: return day; // assume it's already an abbreviation
-        }
+        return firstName + ";" + email + ";" + password + ";" + coursesStr + ";" + availabilityStr;
     }
 }

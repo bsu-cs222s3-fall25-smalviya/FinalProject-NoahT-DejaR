@@ -1,148 +1,88 @@
 package bsu.edu.cs;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 
-import java.util.*;
+import java.util.Map;
 
 public class TimeAvailabilityScene {
 
-    private static final String[] DAYS = {"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
-    private static final String[] DISPLAY_HOURS = {
-            "8 AM","9 AM","10 AM","11 AM","12 PM",
-            "1 PM","2 PM","3 PM","4 PM","5 PM","6 PM","7 PM","8 PM"
-    };
-    private static final int[] HOUR_VALUES = {8,9,10,11,12,13,14,15,16,17,18,19,20}; // for storing in users.txt
+    private static final String[] DAYS = {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
+    private static final int START_HOUR = 8;
+    private static final int END_HOUR = 20;
 
-    public static Scene create(User user, Map<String, User> users, Stage stage) {
-        return new TimeAvailabilityScene(user, users, stage).build();
-    }
-
-    private final User user;
-    private final Map<String, User> users;
-    private final Stage stage;
-    private final ToggleButton[][] buttons;
-
-    private TimeAvailabilityScene(User user, Map<String, User> users, Stage stage) {
-        this.user = user;
-        this.users = users;
-        this.stage = stage;
-        this.buttons = new ToggleButton[DAYS.length][HOUR_VALUES.length];
-    }
-
-    private Scene build() {
-        BorderPane root = new BorderPane();
-        root.setPadding(new Insets(16));
-
-        Label title = new Label("Select Your Weekly Availability");
-        title.setStyle("-fx-font-size:20px; -fx-font-weight:bold; -fx-text-fill: #990000;");
-        BorderPane.setAlignment(title, Pos.CENTER);
-        root.setTop(title);
-
+    public static Scene create(User currentUser, Map<String, User> users, Stage stage, boolean editing) {
         GridPane grid = new GridPane();
-        grid.setHgap(6);
-        grid.setVgap(6);
-        grid.setPadding(new Insets(12));
+        grid.setPadding(new Insets(20));
+        grid.setHgap(5);
+        grid.setVgap(5);
 
-        // Days
-        for (int c = 0; c < DAYS.length; c++) {
-            Label dayLabel = new Label(DAYS[c]);
-            dayLabel.setStyle("-fx-font-size:14px; -fx-font-weight:bold;");
-            grid.add(dayLabel, c + 1, 0);
+        for (int d = 0; d < DAYS.length; d++) {
+            Label dayLabel = new Label(DAYS[d]);
+            dayLabel.setStyle("-fx-font-weight: bold;");
+            grid.add(dayLabel, 0, d + 1);
         }
 
-        // Hours
-        for (int r = 0; r < DISPLAY_HOURS.length; r++) {
-            Label hourLabel = new Label(DISPLAY_HOURS[r]);
-            hourLabel.setStyle("-fx-font-size:12px;");
-            grid.add(hourLabel, 0, r + 1);
+        for (int h = START_HOUR; h <= END_HOUR; h++) {
+            String rangeLabel = formatRange(h);
+            Label hourLabel = new Label(rangeLabel);
+            hourLabel.setStyle("-fx-font-weight: bold;");
+            grid.add(hourLabel, h - START_HOUR + 1, 0);
+        }
 
-            for (int c = 0; c < DAYS.length; c++) {
-                ToggleButton btn = new ToggleButton();
-                btn.setPrefSize(100, 30);
-                btn.setStyle("-fx-background-color: #d9534f; -fx-text-fill: white;"); // red = unavailable
-                int cc = c;
-                int rr = r;
-                btn.setOnAction(e -> {
-                    if (btn.isSelected()) {
-                        btn.setStyle("-fx-background-color: #5cb85c; -fx-text-fill: white;"); // green = available
-                    } else {
-                        btn.setStyle("-fx-background-color: #d9534f; -fx-text-fill: white;");
-                    }
+        for (int d = 0; d < DAYS.length; d++) {
+            for (int h = START_HOUR; h <= END_HOUR; h++) {
+                String key = DAYS[d] + "-" + String.format("%02d:00", h);
+                boolean isAvailable = currentUser.getAvailability().getOrDefault(key, false);
+
+                Button slot = new Button();
+                slot.setMinSize(50, 30);
+                slot.setStyle("-fx-background-color: " + (isAvailable ? "green;" : "red;"));
+
+                slot.setOnAction(e -> {
+                    boolean newVal = !currentUser.getAvailability().getOrDefault(key, false);
+                    currentUser.getAvailability().put(key, newVal);
+                    slot.setStyle("-fx-background-color: " + (newVal ? "green;" : "red;"));
                 });
-                buttons[c][r] = btn;
-                grid.add(btn, c + 1, r + 1);
+
+                grid.add(slot, h - START_HOUR + 1, d + 1);
             }
         }
 
-        // Pre-fill user's existing schedule if available
-        Map<String, List<String>> schedule = user.getStudySchedule();
-        if (schedule != null) {
-            for (int c = 0; c < DAYS.length; c++) {
-                List<String> times = schedule.get(DAYS[c]);
-                if (times != null) {
-                    for (String t : times) {
-                        try {
-                            int hour = Integer.parseInt(t.replace("h", ""));
-                            for (int r = 0; r < HOUR_VALUES.length; r++) {
-                                if (HOUR_VALUES[r] == hour) {
-                                    buttons[c][r].setSelected(true);
-                                    buttons[c][r].setStyle("-fx-background-color: #5cb85c; -fx-text-fill: white;");
-                                    break;
-                                }
-                            }
-                        } catch (NumberFormatException ignored) {}
-                    }
-                }
+        Button nextButton = new Button(editing ? "Save and Return" : "Next");
+        nextButton.setOnAction(e -> {
+            if (editing) {
+                stage.setScene(EditProfileScene.create(currentUser, users, stage));
+            } else {
+                stage.setScene(MatchingScene.create(currentUser, users, stage));
             }
-        }
-
-        ScrollPane sp = new ScrollPane(grid);
-        sp.setFitToWidth(true);
-        sp.setFitToHeight(true);
-        root.setCenter(sp);
-
-        HBox bottom = new HBox(12);
-        bottom.setPadding(new Insets(10));
-        bottom.setAlignment(Pos.CENTER);
-
-        Button back = new Button("Back");
-        back.setOnAction(e -> stage.setScene(CourseSelectionScene.create(user, users, stage)));
-
-        Button save = new Button("Save Availability");
-        save.setOnAction(e -> {
-            Map<String, List<String>> newSchedule = collectSchedule();
-            user.setStudySchedule(newSchedule);
-            users.put(user.getEmail(), user);
-            Alert a = new Alert(Alert.AlertType.INFORMATION);
-            a.setTitle("Saved");
-            a.setHeaderText("Availability saved");
-            a.setContentText("Your availability has been stored.");
-            a.showAndWait();
-            stage.setScene(MatchingScene.create(user, users, stage));
         });
 
-        bottom.getChildren().addAll(back, save);
-        root.setBottom(bottom);
+        VBox layout = new VBox(15, grid, nextButton);
+        layout.setPadding(new Insets(20));
+        layout.setAlignment(Pos.CENTER);
 
-        return new Scene(root, 1100, 700);
+        return new Scene(layout, 1000, 500);
     }
 
-    private Map<String, List<String>> collectSchedule() {
-        Map<String, List<String>> schedule = new LinkedHashMap<>();
-        for (int c = 0; c < DAYS.length; c++) {
-            List<String> times = new ArrayList<>();
-            for (int r = 0; r < HOUR_VALUES.length; r++) {
-                if (buttons[c][r].isSelected()) {
-                    times.add(HOUR_VALUES[r] + "h"); // store in correct format
-                }
-            }
-            if (!times.isEmpty()) schedule.put(DAYS[c], times);
-        }
-        return schedule;
+    public static Scene create(User currentUser, Map<String, User> users, Stage stage) {
+        return create(currentUser, users, stage, false);
+    }
+
+    private static String formatRange(int hour) {
+        return convert(hour) + " - " + convert(hour + 1);
+    }
+
+    private static String convert(int hour) {
+        int h = hour % 12;
+        if (h == 0) h = 12;
+
+        String suffix = (hour < 12 || hour == 24) ? " AM" : " PM";
+        return h + suffix;
     }
 }

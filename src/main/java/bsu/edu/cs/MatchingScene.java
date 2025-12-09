@@ -2,9 +2,10 @@ package bsu.edu.cs;
 
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 
 import java.util.List;
 import java.util.Map;
@@ -13,82 +14,112 @@ import java.util.stream.Collectors;
 public class MatchingScene {
 
     public static Scene create(User currentUser, Map<String, User> users, Stage stage) {
-        Label welcomeLabel = new Label("Welcome, " + currentUser.getFirstName() + "!");
-        welcomeLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #990000;");
 
-        VBox contentBox = new VBox(12);
-        contentBox.setPadding(new Insets(25));
-        contentBox.getChildren().add(welcomeLabel);
+        Label titleLabel = new Label("Welcome to CardinalFinder, " + currentUser.getFirstName() + "!");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #990000;");
+        titleLabel.setWrapText(true);
 
-        if (currentUser.getCourses().isEmpty()) {
-            contentBox.getChildren().add(new Label("You have not selected any courses."));
-        } else {
-            for (String course : currentUser.getCourses()) {
-                Label courseLabel = new Label(course);
-                courseLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;");
-                contentBox.getChildren().add(courseLabel);
+        VBox mainBox = new VBox(20);
+        mainBox.setPadding(new Insets(20));
+        mainBox.setAlignment(Pos.TOP_CENTER);
 
-                // Filter users: same course AND overlapping availability
-                List<User> matches = users.values().stream()
-                        .filter(u -> !u.getEmail().equals(currentUser.getEmail()))
-                        .filter(u -> u.getCourses().contains(course))
-                        .filter(u -> hasOverlap(u.getStudySchedule(), currentUser.getStudySchedule()))
-                        .collect(Collectors.toList());
+        for (String course : currentUser.getCourses()) {
 
-                if (matches.isEmpty()) {
-                    contentBox.getChildren().add(new Label("No matching students for this course and availability."));
-                } else {
-                    ListView<String> listView = new ListView<>();
-                    listView.getItems().setAll(matches.stream().map(User::getFirstName).toList());
-                    listView.setPrefHeight(Math.min(matches.size() * 24 + 2, 200));
+            Label courseLabel = new Label(course);
+            courseLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #990000;");
 
-                    listView.setOnMouseClicked(event -> {
-                        String selectedName = listView.getSelectionModel().getSelectedItem();
-                        if (selectedName != null) {
-                            matches.stream()
-                                    .filter(u -> u.getFirstName().equals(selectedName))
-                                    .findFirst()
-                                    .ifPresent(u -> {
-                                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                                        alert.setTitle("Student Info");
-                                        alert.setHeaderText(u.getFirstName());
-                                        StringBuilder info = new StringBuilder();
-                                        info.append("BSU Email: ").append(u.getEmail()).append("\n");
-                                        info.append("Courses: ").append(String.join(", ", u.getCourses())).append("\n");
-                                        info.append("Availability:\n");
-                                        u.getStudySchedule().forEach((day, times) ->
-                                                info.append("  ").append(day).append(": ").append(String.join(", ", times)).append("\n")
-                                        );
-                                        alert.setContentText(info.toString());
-                                        alert.showAndWait();
-                                    });
-                        }
-                    });
+            List<User> matchedUsers = users.values().stream()
+                    .filter(u -> !u.getEmail().equals(currentUser.getEmail()))
+                    .filter(u -> u.getCourses().contains(course))
+                    .filter(u -> {
+                        return u.getAvailability().keySet().stream()
+                                .anyMatch(slot -> currentUser.getAvailability().getOrDefault(slot, false)
+                                        && u.getAvailability().getOrDefault(slot, false));
+                    })
+                    .collect(Collectors.toList());
 
-                    contentBox.getChildren().add(listView);
+            ListView<String> listView = new ListView<>();
+            listView.setMaxHeight(120);
+
+            listView.getItems().setAll(
+                    matchedUsers.stream()
+                            .map(User::getFirstName)
+                            .collect(Collectors.toList())
+            );
+
+            listView.setOnMouseClicked(e -> {
+                String selectedName = listView.getSelectionModel().getSelectedItem();
+                if (selectedName == null) return;
+
+                User selectedUser = matchedUsers.stream()
+                        .filter(u -> u.getFirstName().equals(selectedName))
+                        .findFirst()
+                        .orElse(null);
+
+                if (selectedUser != null) {
+
+                    List<String> sharedSlots = selectedUser.getAvailability().keySet().stream()
+                            .filter(slot -> currentUser.getAvailability().getOrDefault(slot, false)
+                                    && selectedUser.getAvailability().getOrDefault(slot, false))
+                            .map(MatchingScene::formatSlotRange)  // <-- ONLY CHANGE
+                            .collect(Collectors.toList());
+
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Student Contact Info");
+                    alert.setHeaderText(selectedUser.getFirstName());
+                    alert.setContentText(
+                            "Email: " + selectedUser.getEmail()
+                                    + "\nShared Availability: " + String.join(", ", sharedSlots)
+                    );
+                    alert.showAndWait();
                 }
-            }
+            });
+
+            VBox section = new VBox(5, courseLabel, listView);
+            section.setPadding(new Insets(10));
+            section.setStyle("-fx-border-color: gray; -fx-border-width: 1px;");
+            section.setMaxWidth(300);
+
+            mainBox.getChildren().add(section);
         }
 
-        ScrollPane scrollPane = new ScrollPane(contentBox);
+        ScrollPane scrollPane = new ScrollPane(mainBox);
         scrollPane.setFitToWidth(true);
-        scrollPane.setPrefWidth(450);
-        scrollPane.setPrefHeight(500);
 
-        return new Scene(scrollPane);
+        Button editProfileButton = new Button("Edit Profile");
+        editProfileButton.setMinWidth(150);
+        editProfileButton.setOnAction(e -> stage.setScene(EditProfileScene.create(currentUser, users, stage)));
+
+        Button logoutButton = new Button("Logout");
+        logoutButton.setMinWidth(150);
+        logoutButton.setOnAction(e -> stage.setScene(LoginScene.create(users, stage)));
+
+        HBox buttonBox = new HBox(20, editProfileButton, logoutButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        VBox wrapper = new VBox(15, titleLabel, scrollPane, buttonBox);
+        wrapper.setPadding(new Insets(20));
+        wrapper.setAlignment(Pos.TOP_CENTER);
+
+        return new Scene(wrapper, 450, 500);
     }
 
-    // Helper method: checks if two schedules have at least one overlapping day & hour
-    private static boolean hasOverlap(Map<String, List<String>> schedule1, Map<String, List<String>> schedule2) {
-        for (String day : schedule1.keySet()) {
-            if (schedule2.containsKey(day)) {
-                for (String hour : schedule1.get(day)) {
-                    if (schedule2.get(day).contains(hour)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+    private static String formatSlotRange(String slot) {
+        String[] parts = slot.split("-");
+        String day = parts[0];
+        int hour = Integer.parseInt(parts[1].replace(":00", ""));
+
+        String start = convertTo12Hour(hour);
+        String end = convertTo12Hour(hour + 1);
+
+        return day + " " + start + " - " + end;
+    }
+
+    private static String convertTo12Hour(int hour) {
+        int h = hour % 12;
+        if (h == 0) h = 12;
+
+        String suffix = (hour < 12 || hour == 24) ? " AM" : " PM";
+        return h + suffix;
     }
 }
